@@ -22,6 +22,7 @@ export class Game{
 
         // update the board
         //push the move 
+        // check check 
 
         // check if game is over 
 
