@@ -13,16 +13,16 @@ export const Home = () => {
               height={500}
             />
           </div>
-          <div className="flex-1 bg-red-200 index_intro">
+          <div className="flex-1 index_intro">
             <h1 className="index_title ">
               Play Chess Online on the #1 Site
             </h1>
-            <div>
-              <p>
+            <div className="index_info" >
+              <p className="index_infoItem" >
                 <span>1000</span> Games Today
               </p>
-              <p>
-                <span>100</span>Playing Now
+              <p className="index_infoItem">
+                <span>100</span> Playing Now
               </p>
             </div>
             <div>

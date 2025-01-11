@@ -13,7 +13,7 @@
 
 .index_intro{
     display: flex;
-    width: 80%;
+    width: 100%;
     flex-direction: column;
     align-items: center;
     padding: 0 4rem;
@@ -27,4 +27,23 @@
     font-weight: 700;
     line-height: 1.13;
     text-align: center;
+}
+
+.index_info{
+   display: flex;
+   justify-content: space-between;
+   /* align-items: ; */
+}
+
+.index_infoItem{
+    color: #ffffff80;
+    display: inline-block;
+    font-size: 1.2rem;
+    position: relative;
+    text-align: center;
+}
+
+.index_infoItem > span{
+    font-weight: 600;
+    color: white;
 }
