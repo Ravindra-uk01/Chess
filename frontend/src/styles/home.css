@@ -1,0 +1,30 @@
+.base-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #302e2b;
+}
+
+.main-container {
+  margin: 0 2rem;
+  padding: 1rem;
+}
+
+.index_intro{
+    display: flex;
+    width: 80%;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 4rem;
+}
+
+.index_title{
+    padding: 1rem 0;
+    color: white;
+    font-size: 2.4rem;
+    font-size: clamp(3rem, 3.5rem);
+    font-weight: 700;
+    line-height: 1.13;
+    text-align: center;
+}
