@@ -13,9 +13,10 @@
 
 .index_intro{
     display: flex;
-    width: 100%;
+    width: 80%;
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
     padding: 0 4rem;
 }
 
@@ -32,7 +33,7 @@
 .index_info{
    display: flex;
    justify-content: space-between;
-   /* align-items: ; */
+   width: 100%;
 }
 
 .index_infoItem{
@@ -46,4 +47,72 @@
 .index_infoItem > span{
     font-weight: 600;
     color: white;
+}
+
+.index_playButtonsDiv{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.index_playButtons{
+  background-color: #81b64c;
+  color: white;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  width: 100%;
+  height: 96px;
+  font-size: 1.4rem;
+  line-height: 1.43;
+}
+
+.index_playButtons:hover{
+  background-color: #5d9948;;
+}
+
+.index_playHand_Icon{
+  background-image: url("../../public/playhand_icon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 .2rem .3rem rgba(0, 0, 0, .4));
+  flex-shrink: 0;
+  height: 2.2em;
+  position: relative;
+  width: 2.2em;
+  
+}
+
+.bot_play_Icon{
+  background-image: url("../../public/bot_play.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 .2rem .3rem rgba(0, 0, 0, .4));
+  flex-shrink: 0;
+  height: 2.2em;
+  position: relative;
+  width: 2.2em;
+}
+
+.index_playButton_info{
+  font-size: 1rem;
+  text-align: start;
+  display: flex;
+  flex-direction: column;
+}
+
+.index_playButton_info > h1{
+  font-weight: 700;
+  font-size: 1.8rem;
+
+}
+
+.index_playButton_info > p{
+  font-size: 1rem;
+  /* font-weight: 500; */
 }

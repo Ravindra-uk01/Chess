@@ -13,21 +13,31 @@ export const Home = () => {
               height={500}
             />
           </div>
-          <div className="flex-1 index_intro">
-            <h1 className="index_title ">
-              Play Chess Online on the #1 Site
-            </h1>
-            <div className="index_info" >
-              <p className="index_infoItem" >
+          <div className="flex-1 index_intro bg-red-200">
+            <h1 className="index_title ">Play Chess Online on the #1 Site</h1>
+            <div className="index_info">
+              <p className="index_infoItem">
                 <span>1000</span> Games Today
               </p>
               <p className="index_infoItem">
                 <span>100</span> Playing Now
               </p>
             </div>
-            <div>
-              <button type="button">Play Online</button>
-              <button type="button">Play Bots</button>
+            <div className="index_playButtonsDiv">
+              <button type="button" className="index_playButtons">
+                <div className="index_playHand_Icon"></div>
+                <div className="index_playButton_info">
+                  <h1>Play Online</h1>
+                  <p>Play with someone at your level</p>
+                </div>
+              </button>
+              <button type="button" className="index_playButtons">
+                <div className="bot_play_Icon" ></div>
+                <div className="index_playButton_info">
+                  <h1>Play Bots</h1>
+                  <p>Play Vs Customizable training bots </p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
