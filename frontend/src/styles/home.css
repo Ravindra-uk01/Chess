@@ -1,10 +1,4 @@
-.base-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background-color: #302e2b;
-}
+
 
 .main-container {
   margin: 0 2rem;
@@ -58,7 +52,7 @@
 }
 
 .index_playButtons{
-  background-color: #81b64c;
+  background-color: #5d9948;
   color: white;
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -74,7 +68,23 @@
 }
 
 .index_playButtons:hover{
-  background-color: #5d9948;;
+  background-color: #81b64c;
+  text-shadow: 
+        0 .1rem 0 rgba(0, 0, 0, .2), 
+        0 .3rem 1.6rem rgba(0, 0, 0, .05); 
+  box-shadow: 
+        0 4px 10px rgba(0, 0, 0, 0.2), 
+        0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.index_playButtonsDiv > button:last-child {
+  background-color: #ffffff1a;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.index_playButtonsDiv > button:last-child:hover {
+  background-color: #ffffff33; 
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.5);
 }
 
 .index_playHand_Icon{

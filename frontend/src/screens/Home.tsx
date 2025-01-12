@@ -1,6 +1,10 @@
+import { useNavigate } from "react-router-dom";
+import "../styles/common.css";
 import "../styles/home.css";
 
 export const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="base-container">
       <div className="main-container">
@@ -28,7 +32,7 @@ export const Home = () => {
               </p>
             </div>
             <div className="index_playButtonsDiv">
-              <button type="button" className="index_playButtons">
+              <button type="button" className="index_playButtons" onClick={()=>navigate("/game")}>
                 <div className="index_playHand_Icon"></div>
                 <div className="index_playButton_info">
                   <h1>Play Online</h1>
