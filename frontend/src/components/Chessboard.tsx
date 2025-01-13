@@ -70,7 +70,9 @@ export const Chessboard = ({
                 >
                   <div className="w-full flex justify-center h-full ">
                     <div className="flex flex-col justify-center h-full ">
-                      {square ? square.type : ""}
+                      {square ? (
+                        <img src={`${square.color === 'b' ? `b${square.type}.png`: `w${square.type}.png`}`} alt="chess pieces" />
+                      ) : ""}
                     </div>
                   </div>
                 </div>
