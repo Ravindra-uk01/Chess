@@ -4,6 +4,7 @@ import { useSocket } from "../hooks/useSocket";
 import "../styles/common.css";
 import { Chess } from "chess.js";
 
+// todo : need to remove this repitive code
 export const INIT_GAME = "init_game";
 export const MOVE = "move";
 export const GAME_OVER = "game_over";

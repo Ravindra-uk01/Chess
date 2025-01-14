@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/common.css";
 import "../styles/home.css";
 
+// TODO  need to add the logicc got bots play
 export const Home = () => {
   const navigate = useNavigate();
 
