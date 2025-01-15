@@ -27,7 +27,6 @@ export const Chessboard = ({
   // }
 
   const handleMove = (squareData: Square ) => {
-    // console.log('move is here ')
     if (!from) {
       setFrom(squareData);
     } else {
@@ -49,7 +48,6 @@ export const Chessboard = ({
         to:squareData,
       })
       setBoard(chess.board());
-      // console.log("from to ", {from , to:squareData})
     }
   };
 
