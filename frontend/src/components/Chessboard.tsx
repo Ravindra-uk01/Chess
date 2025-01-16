@@ -51,6 +51,8 @@ export const Chessboard = ({
     }
   };
 
+  console.log('adding the logic of chess here ')
+
   return (
     <div className="">
       {board.map((row, i) => {
