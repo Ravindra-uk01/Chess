@@ -40,13 +40,13 @@ export const Home = () => {
                   <p>Play with someone at your level</p>
                 </div>
               </button>
-              <button type="button" className="index_playButtons">
+              {/* <button type="button" className="index_playButtons">
                 <div className="bot_play_Icon" ></div>
                 <div className="index_playButton_info">
                   <h1>Play Bots</h1>
                   <p>Play Vs Customizable training bots </p>
                 </div>
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
