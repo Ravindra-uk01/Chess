@@ -19,13 +19,7 @@ export const Chessboard = ({
 }) => {
 
   const [from, setFrom] = useState<Square | null>(null);
-
-  // interface SquareData {
-  //   square: Square;
-  //   type: PieceSymbol;
-  //   color: Color;
-  // }
-
+  
   const handleMove = (squareData: Square ) => {
     if (!from) {
       setFrom(squareData);
