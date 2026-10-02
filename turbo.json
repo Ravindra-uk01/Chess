@@ -1,9 +1,10 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": ["**/.env.*local"],
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["db:generate","^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
     },
@@ -14,8 +15,15 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
+      "dependsOn": ["^db:generate"],
       "cache": false,
       "persistent": true
+    },
+    "db:generate": {
+        "cache": false
+    },
+     "db:push":{
+      "cache": false
     }
   }
 }

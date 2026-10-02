@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chess-app-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chess}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess123}
+      POSTGRES_DB: ${POSTGRES_DB:-chess_dev}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - chess-app-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chess} -d ${POSTGRES_DB:-chess_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  chess-app-db-data:
+    name: chess-app-db-data

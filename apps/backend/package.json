@@ -10,7 +10,18 @@
   "keywords": [],
   "type": "module",
   "dependencies": {
+    "@repo/db": "*",
     "@types/express": "^5.0.6",
-    "express": "^5.2.1"
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express-session": "^1.19.0",
+    "@types/node": "^24.13.4",
+    "@types/passport": "^1.0.17"
   }
 }

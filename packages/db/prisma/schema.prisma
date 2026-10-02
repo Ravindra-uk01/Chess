@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id                            String       @id @default(uuid())
+  username                      String?      @unique
+  email                         String       @unique
+  password                      String?
+  rating                        Int          @default(1200)
+  createdAt                     DateTime     @default(now())
+  lastLogin                     DateTime?
+  provider                      AuthProvider
+  name                          String?
+
+  @@index([rating])
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  TIME_UP
+}
+
+enum GameResult {
+  WHITE_WINS
+  BLACK_WINS
+  DRAW
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  FACEBOOK
+  GITHUB
+  GUEST
+}
