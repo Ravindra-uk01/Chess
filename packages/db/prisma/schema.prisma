@@ -8,6 +8,7 @@ datasource db {
 }
 
 
+
 model User {
   id                            String       @id @default(uuid())
   username                      String?      @unique
@@ -40,5 +41,6 @@ enum AuthProvider {
   GOOGLE
   FACEBOOK
   GITHUB
+  APPLE
   GUEST
 }

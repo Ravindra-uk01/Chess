@@ -47,6 +47,7 @@ export const AuthProvider: {
   GOOGLE: 'GOOGLE',
   FACEBOOK: 'FACEBOOK',
   GITHUB: 'GITHUB',
+  APPLE: 'APPLE',
   GUEST: 'GUEST'
 };
 

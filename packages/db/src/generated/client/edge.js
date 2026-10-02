@@ -136,6 +136,7 @@ exports.AuthProvider = exports.$Enums.AuthProvider = {
   GOOGLE: 'GOOGLE',
   FACEBOOK: 'FACEBOOK',
   GITHUB: 'GITHUB',
+  APPLE: 'APPLE',
   GUEST: 'GUEST'
 };
 
@@ -150,7 +151,7 @@ const config = {
   "clientVersion": "7.10.0",
   "engineVersion": "0edf323efd1d98336f3f0a68684b56f689b900d3",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String       @id @default(uuid())\n  username  String?      @unique\n  email     String       @unique\n  password  String?\n  rating    Int          @default(1200)\n  createdAt DateTime     @default(now())\n  lastLogin DateTime?\n  provider  AuthProvider\n  name      String?\n\n  @@index([rating])\n}\n\nenum GameStatus {\n  IN_PROGRESS\n  COMPLETED\n  ABANDONED\n  TIME_UP\n}\n\nenum GameResult {\n  WHITE_WINS\n  BLACK_WINS\n  DRAW\n}\n\nenum AuthProvider {\n  EMAIL\n  GOOGLE\n  FACEBOOK\n  GITHUB\n  GUEST\n}\n"
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String       @id @default(uuid())\n  username  String?      @unique\n  email     String       @unique\n  password  String?\n  rating    Int          @default(1200)\n  createdAt DateTime     @default(now())\n  lastLogin DateTime?\n  provider  AuthProvider\n  name      String?\n\n  @@index([rating])\n}\n\nenum GameStatus {\n  IN_PROGRESS\n  COMPLETED\n  ABANDONED\n  TIME_UP\n}\n\nenum GameResult {\n  WHITE_WINS\n  BLACK_WINS\n  DRAW\n}\n\nenum AuthProvider {\n  EMAIL\n  GOOGLE\n  FACEBOOK\n  GITHUB\n  APPLE\n  GUEST\n}\n"
 }
 
 config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rating\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"lastLogin\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"provider\",\"kind\":\"enum\",\"type\":\"AuthProvider\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null,\"schema\":null}},\"enums\":{},\"types\":{}}")

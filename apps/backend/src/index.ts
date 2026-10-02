@@ -1,13 +1,13 @@
+import 'dotenv/config';   // ← MUST be first: sets process.env before any other import runs
 import express from "express";
-import dotenv from "dotenv";
 import session from "express-session";
 import passport from "passport";
 import cors from "cors";
 import { initPassport } from "./passport";
-dotenv.config();
+import authRouter from "./router/auth";
+import bodyParser from 'body-parser';
 
 const PORT = process.env.PORT;
-console.log("port is PORT ", PORT)
 const app = express();
 
 app.use(session({
@@ -16,6 +16,9 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000  }
 }));
+
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 initPassport(); // Initialize passport strategies
 app.use(passport.initialize());
@@ -34,6 +37,8 @@ app.get('/', (req, res)=>{
         "status": 'success'
     })
 })
+
+app.use('/auth', authRouter);
 
 app.listen(PORT, ()=>{
     console.log(`server is listening in port ${PORT} `);

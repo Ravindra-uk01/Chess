@@ -130,6 +130,8 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3000';
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -138,6 +140,7 @@ function Login() {
 
   const handleSocialLogin = (provider: string) => {
     console.log(`Login with ${provider}`);
+    window.open(`${BACKEND_URL}/auth/${provider.toLowerCase()}`, '_self');
   };
 
   return (

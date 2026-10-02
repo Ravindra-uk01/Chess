@@ -151,6 +151,7 @@ exports.AuthProvider = exports.$Enums.AuthProvider = {
   GOOGLE: 'GOOGLE',
   FACEBOOK: 'FACEBOOK',
   GITHUB: 'GITHUB',
+  APPLE: 'APPLE',
   GUEST: 'GUEST'
 };
 
