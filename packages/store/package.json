@@ -7,8 +7,15 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {
-    "./userAtom": "./src/atoms/user.ts"
+    "./userAtom": "./src/atoms/user.ts",
+    "./useUser": "./src/hooks/useUser.ts"
   },
   "keywords": [],
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "recoil": "^0.7.7"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
+  }
 }

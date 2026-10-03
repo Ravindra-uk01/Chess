@@ -1,0 +1,633 @@
+/* ============================================================
+   Register.css — Futuristic Chess Register Page
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+/*
+  Override the global #root container so the register page can
+  stretch to fill the full viewport without the 1126px cap.
+*/
+body:has(.reg-root) {
+  overflow: hidden;
+}
+
+body:has(.reg-root) #root {
+  width: 100%;
+  max-width: 100%;
+  border-inline: none;
+  min-height: 100svh;
+  display: block;
+  text-align: initial;
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+.reg-root *,
+.reg-root *::before,
+.reg-root *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Root wrapper ─────────────────────────────────────────── */
+.reg-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* ── Background image ─────────────────────────────────────── */
+.reg-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  transform: scale(1.05);
+  animation: reg-bg-drift 20s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+@keyframes reg-bg-drift {
+  from { transform: scale(1.05) translateY(0px); }
+  to   { transform: scale(1.08) translateY(-12px); }
+}
+
+/* ── Dark overlay ─────────────────────────────────────────── */
+.reg-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 100%, rgba(168, 85, 247, 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 50% 0%,   rgba(0, 245, 255, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(2, 4, 20, 0.70) 0%, rgba(2, 4, 20, 0.84) 60%, rgba(2, 4, 20, 0.94) 100%);
+  z-index: 1;
+}
+
+/* ── Holographic grid ─────────────────────────────────────── */
+.reg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  z-index: 2;
+  pointer-events: none;
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.5) 80%, transparent 100%);
+}
+
+/* ── Floating particles ───────────────────────────────────── */
+.reg-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.reg-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #a855f7 0%, rgba(168, 85, 247, 0) 70%);
+  animation: reg-particle-float linear infinite;
+  opacity: 0;
+}
+
+@keyframes reg-particle-float {
+  0%   { opacity: 0;   transform: translateY(0px) scale(1);   }
+  20%  { opacity: 0.7; }
+  80%  { opacity: 0.5; }
+  100% { opacity: 0;   transform: translateY(-80px) scale(0.5); }
+}
+
+/* ── Orbital ring decorations ─────────────────────────────── */
+.reg-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(168, 85, 247, 0.08);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.reg-ring--1 {
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: reg-ring-spin 40s linear infinite;
+}
+
+.reg-ring--2 {
+  width: 900px;
+  height: 900px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-color: rgba(0, 245, 255, 0.04);
+  animation: reg-ring-spin 70s linear infinite reverse;
+}
+
+@keyframes reg-ring-spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.reg-card {
+  position: relative;
+  z-index: 10;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 36px 40px 32px;
+  border-radius: 24px;
+  background: rgba(5, 8, 30, 0.75);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.06),
+    0 32px 80px rgba(0, 0, 0, 0.65),
+    0 0 60px rgba(168, 85, 247, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: reg-card-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+}
+
+.reg-card::-webkit-scrollbar {
+  width: 4px;
+}
+.reg-card::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 99px;
+}
+
+@keyframes reg-card-in {
+  from { opacity: 0; transform: translateY(32px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Top glow bar */
+.reg-card-glow {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #a855f7, #00f5ff, transparent);
+  border-radius: 99px;
+  animation: reg-glow-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes reg-glow-pulse {
+  0%, 100% { opacity: 0.65; width: 60%; }
+  50%       { opacity: 1;    width: 82%; }
+}
+
+/* ── Logo ─────────────────────────────────────────────────── */
+.reg-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.reg-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(0,245,255,0.15));
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+}
+
+.reg-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.reg-logo-nexus {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, #a855f7, #00f5ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.reg-logo-chess {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 6px;
+  color: rgba(168, 85, 247, 0.6);
+  text-transform: uppercase;
+}
+
+/* ── Heading & tagline ────────────────────────────────────── */
+.reg-heading {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-align: center;
+  background: linear-gradient(90deg, #e2e8f0, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+
+.reg-tagline {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(148, 163, 184, 0.65);
+  letter-spacing: 0.4px;
+  margin-bottom: 22px;
+}
+
+/* ── Form ─────────────────────────────────────────────────── */
+.reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Input field wrapper */
+.reg-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: filter 0.2s;
+}
+
+.reg-field-wrap--error .reg-input {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+}
+
+.reg-field-wrap--ok .reg-input {
+  border-color: rgba(34, 197, 94, 0.45);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.07);
+}
+
+.reg-field-icon {
+  position: absolute;
+  left: 14px;
+  color: rgba(168, 85, 247, 0.55);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.reg-input {
+  width: 100%;
+  padding: 13px 44px 13px 42px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(168, 85, 247, 0.14);
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+
+.reg-input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+}
+
+.reg-input:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+  background: rgba(168, 85, 247, 0.04);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.08), 0 0 16px rgba(168, 85, 247, 0.08);
+}
+
+/* Eye toggle button */
+.reg-eye-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(148, 163, 184, 0.5);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.reg-eye-btn:hover {
+  color: #a855f7;
+}
+
+/* Error text */
+.reg-field-error {
+  font-size: 11.5px;
+  color: #ef4444;
+  margin-top: -8px;
+  padding-left: 2px;
+  animation: reg-fade-in 0.2s ease;
+}
+
+@keyframes reg-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Password strength ────────────────────────────────────── */
+.reg-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -6px;
+  animation: reg-fade-in 0.2s ease;
+}
+
+.reg-strength-bars {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+}
+
+.reg-strength-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  transition: background 0.35s, box-shadow 0.35s;
+}
+
+.reg-strength-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  min-width: 52px;
+  text-align: right;
+  transition: color 0.35s;
+}
+
+/* ── Terms checkbox ───────────────────────────────────────── */
+.reg-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12.5px;
+  color: rgba(148, 163, 184, 0.8);
+  cursor: pointer;
+  user-select: none;
+  line-height: 1.45;
+  margin-top: -2px;
+}
+
+.reg-terms input[type='checkbox'] {
+  display: none;
+}
+
+.reg-custom-cb {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+
+.reg-terms input[type='checkbox']:checked + .reg-custom-cb {
+  background: linear-gradient(135deg, #a855f7, #00f5ff);
+  border-color: transparent;
+}
+
+.reg-terms input[type='checkbox']:checked + .reg-custom-cb::after {
+  content: '';
+  display: block;
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.reg-link {
+  color: #a855f7;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+.reg-link:hover {
+  color: #00f5ff;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.45);
+}
+
+/* ── Primary button ───────────────────────────────────────── */
+.reg-btn-primary {
+  margin-top: 2px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: linear-gradient(135deg, #7c3aed, #00c8d4);
+  color: #fff;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.3), 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.reg-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.reg-btn-primary:hover:not(:disabled)::after {
+  transform: translateX(100%);
+}
+
+.reg-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 0 44px rgba(168, 85, 247, 0.45), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.reg-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.reg-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reg-btn-arrow {
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.reg-btn-primary:hover:not(:disabled) .reg-btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Loading spinner */
+.reg-spinner {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: reg-spin 0.7s linear infinite;
+}
+
+@keyframes reg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.reg-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.reg-divider::before,
+.reg-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.15), transparent);
+}
+
+/* ── Social buttons ───────────────────────────────────────── */
+.reg-social-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.reg-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.reg-social-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 85, 247, 0.28);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.reg-social-btn--apple:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.reg-social-btn--facebook:hover {
+  border-color: rgba(24, 119, 242, 0.4);
+  box-shadow: 0 6px 20px rgba(24, 119, 242, 0.15);
+}
+
+/* ── Sign in footer ───────────────────────────────────────── */
+.reg-login {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.reg-login-link {
+  color: #a855f7;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+.reg-login-link:hover {
+  color: #00f5ff;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.45);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .reg-card {
+    padding: 28px 20px 24px;
+  }
+
+  .reg-social-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-social-btn {
+    justify-content: flex-start;
+    padding: 12px 16px;
+  }
+
+  .reg-logo-nexus {
+    font-size: 18px;
+  }
+
+  .reg-ring--1,
+  .reg-ring--2 {
+    display: none;
+  }
+}

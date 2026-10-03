@@ -235,6 +235,7 @@ function Landing() {
           <button
             id="landing-signup-btn"
             className="btn-glow px-10 py-4 rounded-xl text-sm"
+            onClick={() => window.location.href = '/signup'}
           >
             Create Free Account
           </button>
@@ -244,4 +245,4 @@ function Landing() {
   );
 }
 
-export default Landing;
+export default Landing;

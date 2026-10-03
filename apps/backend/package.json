@@ -16,6 +16,7 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.0",
     "passport": "^0.7.0",
     "passport-apple": "^2.0.2",
     "passport-facebook": "^3.0.0",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express-session": "^1.19.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.13.4",
     "@types/passport": "^1.0.17",
     "@types/passport-apple": "^2.0.3",

@@ -34,5 +34,11 @@
     "esbuild@0.28.2": true,
     "@prisma/engines@7.10.0": true,
     "prisma@7.10.0": true
+  },
+  "overrides": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5"
   }
 }

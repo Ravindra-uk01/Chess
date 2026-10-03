@@ -139,7 +139,6 @@ function Login() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
     window.open(`${BACKEND_URL}/auth/${provider.toLowerCase()}`, '_self');
   };
 

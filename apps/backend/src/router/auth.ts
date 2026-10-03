@@ -1,9 +1,35 @@
 import { Request, Response, Router } from "express";
 import passport from "passport";
+import jwt from "jsonwebtoken";
+import { db } from "../db";
 
 const router = Router();
 const CLIENT_URL =
   process.env.AUTH_REDIRECT_URL ?? 'http://localhost:5173/game/random';
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+
+router.get('/refresh', async(req: Request, res: Response) => {
+  if(req.user){
+    const user = req.user as any; 
+    const userData = await db.user.findFirst({
+      where: { id: user.id },
+    })
+
+    const token = jwt.sign(
+      { id: user.id }, 
+      JWT_SECRET
+    );
+
+    res.json({ 
+      success: true, 
+      token,
+      name : userData?.username,
+      id : userData?.id,
+     });
+  }else{
+    res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+});
 
 router.post('/logout', (req: Request, res: Response) => {
   req.logout((err) => {
