@@ -1,5 +1,8 @@
 
-// ── Floating background particles ────────────────────────────────────────────
+import { useNavigate } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
+import { userAtom, BACKEND_URL } from '@repo/store/userAtom';
+
 const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
   id: i,
   left:  `${Math.round((i * 37 + 7) % 100)}%`,
@@ -69,6 +72,25 @@ function StatPill({ value, label }: { value: string; label: string }) {
 
 // ── Main Landing ─────────────────────────────────────────────────────────────
 function Landing() {
+  const navigate = useNavigate();
+  const setUser = useSetRecoilState(userAtom);
+
+  const handleGuestPlay = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/guest`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Guest login failed');
+      const userData = await res.json();
+      setUser(userData);
+      navigate('/home');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-background overflow-hidden font-inter">
       {/* Holographic grid */}
@@ -129,10 +151,24 @@ function Landing() {
           style={{ animationDelay: '0.3s' }}
         >
           <button
-            id="landing-play-btn"
+            id="landing-login-btn"
             className="btn-glow px-8 py-3.5 rounded-xl text-sm"
+            onClick={() => navigate('/login')}
           >
-            Play Now
+            Login to Play
+          </button>
+          <button
+            id="landing-guest-btn"
+            className="px-8 py-3.5 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
+            style={{
+              borderColor: 'rgba(0,245,255,0.35)',
+              color: '#00f5ff',
+              background: 'rgba(0,245,255,0.06)',
+            }}
+            onClick={handleGuestPlay}
+          >
+            <span style={{ fontSize: '16px' }}>👤</span>
+            Play as Guest
           </button>
           <button
             id="landing-learn-btn"
@@ -230,15 +266,29 @@ function Landing() {
             Ready to make your move?
           </h2>
           <p className="text-foreground-muted mb-8 max-w-md mx-auto">
-            Join millions of players worldwide. Create your free account and start playing in seconds.
+            Join millions of players worldwide. Create your free account or jump right in as a guest.
           </p>
-          <button
-            id="landing-signup-btn"
-            className="btn-glow px-10 py-4 rounded-xl text-sm"
-            onClick={() => window.location.href = '/signup'}
-          >
-            Create Free Account
-          </button>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <button
+              id="landing-signup-btn"
+              className="btn-glow px-10 py-4 rounded-xl text-sm"
+              onClick={() => navigate('/signup')}
+            >
+              Create Free Account
+            </button>
+            <button
+              id="landing-guest-cta-btn"
+              className="px-10 py-4 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5"
+              style={{
+                borderColor: 'rgba(0,245,255,0.35)',
+                color: '#00f5ff',
+                background: 'rgba(0,245,255,0.06)',
+              }}
+              onClick={handleGuestPlay}
+            >
+              👤 Play as Guest
+            </button>
+          </div>
         </div>
       </section>
     </div>

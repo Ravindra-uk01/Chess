@@ -28,10 +28,12 @@ export function initPassport() {
                     create: {
                         email: profile.emails[0].value,
                         username: profile.displayName,
+                        name: profile.displayName,
                         provider: 'GOOGLE',
                     },
                     update: {
                         username: profile.displayName,
+                        name: profile.displayName,
                     },
                     where: {
                         email: profile.emails[0].value
@@ -92,10 +94,12 @@ export function initPassport() {
                 create: {
                     email,
                     username: profile.displayName,
+                    name: profile.displayName,
                     provider: 'FACEBOOK',
                 },
                 update: {
                     username: profile.displayName,
+                    name: profile.displayName,
                 },
                 where: { email }
             });
@@ -107,7 +111,7 @@ export function initPassport() {
 
     passport.serializeUser(function(user: any, cb: Function) {
         process.nextTick(function() {
-            return cb(null, { id: user.id, username: user.username, picture: user.picture });
+            return cb(null, { id: user.id, username: user.username, name: user.name, picture: user.picture });
         });
     });
 

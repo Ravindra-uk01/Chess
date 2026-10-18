@@ -1,5 +1,4 @@
-import {WebSocket} from "ws";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import { useUser } from "@repo/store/useUser";
 
 const WS_URL = import.meta.env.VITE_APP_WEBSOCKET_URL || "ws://localhost:8080";
@@ -14,7 +13,7 @@ export const useSocket = () => {
             return;
         }
 
-        const ws = new WebSocket(`{WS_URL}?token=${user.token}`);
+        const ws = new WebSocket(`${WS_URL}?token=${user.token}`);
 
         ws.onopen = () => {
             console.log("WebSocket connection established");

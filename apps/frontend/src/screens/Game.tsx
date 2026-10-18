@@ -18,6 +18,7 @@ function Game(){
 
     console.log('Current user in Game component:', user);
     console.log('Current gameId in Game component:', gameId);
+    console.log('Socket in Game component:', socket);
     return (
         <h1> Game</h1>
     )

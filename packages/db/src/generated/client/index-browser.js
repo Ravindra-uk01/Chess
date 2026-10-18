@@ -123,13 +123,42 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
+  name: 'name',
   email: 'email',
   password: 'password',
   rating: 'rating',
-  createdAt: 'createdAt',
-  lastLogin: 'lastLogin',
   provider: 'provider',
-  name: 'name'
+  createdAt: 'createdAt',
+  lastLogin: 'lastLogin'
+};
+
+exports.Prisma.GameScalarFieldEnum = {
+  id: 'id',
+  whitePlayerId: 'whitePlayerId',
+  blackPlayerId: 'blackPlayerId',
+  status: 'status',
+  result: 'result',
+  timeControl: 'timeControl',
+  startingFen: 'startingFen',
+  currentFen: 'currentFen',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  opening: 'opening',
+  event: 'event'
+};
+
+exports.Prisma.MoveScalarFieldEnum = {
+  id: 'id',
+  gameId: 'gameId',
+  moveNumber: 'moveNumber',
+  from: 'from',
+  to: 'to',
+  comments: 'comments',
+  before: 'before',
+  after: 'after',
+  timeTaken: 'timeTaken',
+  createdAt: 'createdAt',
+  san: 'san'
 };
 
 exports.Prisma.SortOrder = {
@@ -155,8 +184,30 @@ exports.AuthProvider = exports.$Enums.AuthProvider = {
   GUEST: 'GUEST'
 };
 
+exports.GameStatus = exports.$Enums.GameStatus = {
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  ABANDONED: 'ABANDONED',
+  TIME_UP: 'TIME_UP'
+};
+
+exports.GameResult = exports.$Enums.GameResult = {
+  WHITE_WINS: 'WHITE_WINS',
+  BLACK_WINS: 'BLACK_WINS',
+  DRAW: 'DRAW'
+};
+
+exports.TimeControl = exports.$Enums.TimeControl = {
+  CLASSICAL: 'CLASSICAL',
+  RAPID: 'RAPID',
+  BLITZ: 'BLITZ',
+  BULLET: 'BULLET'
+};
+
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Game: 'Game',
+  Move: 'Move'
 };
 
 /**

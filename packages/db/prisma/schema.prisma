@@ -12,15 +12,54 @@ datasource db {
 model User {
   id                            String       @id @default(uuid())
   username                      String?      @unique
+  name                          String?
   email                         String       @unique
   password                      String?
   rating                        Int          @default(1200)
+  provider                      AuthProvider
   createdAt                     DateTime     @default(now())
   lastLogin                     DateTime?
-  provider                      AuthProvider
-  name                          String?
+  gameAsWhite                   Game[]       @relation("GameAsWhite")
+  gameAsBlack                   Game[]       @relation("GameAsBlack")
 
   @@index([rating])
+}
+
+model Game {
+  id                            String        @id @default(uuid())
+  whitePlayerId                 String    
+  blackPlayerId                 String
+  whitePlayer                   User          @relation("GameAsWhite", fields: [whitePlayerId], references: [id])
+  blackPlayer                   User          @relation("GameAsBlack", fields: [blackPlayerId], references: [id])
+  status                        GameStatus
+  result                        GameResult?
+  timeControl                   TimeControl
+  startingFen                   String        @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") // default value for the startingFen
+  currentFen                    String?
+  startAt                       DateTime      @default(now())
+  endAt                         DateTime?
+  moves                         Move[]
+  opening                       String?
+  event                         String?
+
+  @@index([status, result])
+}
+
+model Move{
+  id                            String        @id  @default(uuid())
+  gameId                        String
+  game                          Game          @relation(fields: [gameId], references: [id])
+  moveNumber                    Int
+  from                          String
+  to                            String
+  comments                      String?
+  before                        String
+  after                         String
+  timeTaken                     Int           @default(0)
+  createdAt                     DateTime      @default(now())
+  san                           String?
+
+  @@index([gameId])
 }
 
 enum GameStatus {
@@ -43,4 +82,11 @@ enum AuthProvider {
   GITHUB
   APPLE
   GUEST
+}
+
+enum TimeControl {
+  CLASSICAL
+  RAPID
+  BLITZ
+  BULLET
 }

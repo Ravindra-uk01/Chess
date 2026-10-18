@@ -8,7 +8,8 @@
   },
   "exports": {
     "./userAtom": "./src/atoms/user.ts",
-    "./useUser": "./src/hooks/useUser.ts"
+    "./useUser": "./src/hooks/useUser.ts",
+    "./useSetUser": "./src/hooks/useSetUser.ts"
   },
   "keywords": [],
   "type": "commonjs",

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
+import { userAtom } from '@repo/store/userAtom';
 import './Login.css';
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -43,9 +46,20 @@ const FacebookIcon = () => (
   </svg>
 );
 
-const AppleIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="white"/>
+const GuestIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="8" r="4" stroke="url(#gi1)" strokeWidth="1.8"/>
+    <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="url(#gi2)" strokeWidth="1.8" strokeLinecap="round"/>
+    <circle cx="19" cy="5" r="2" fill="rgba(0,245,255,0.25)" stroke="#00f5ff" strokeWidth="1.2"/>
+    <path d="M18.5 5h1M19 4.5v1" stroke="#00f5ff" strokeWidth="1" strokeLinecap="round"/>
+    <defs>
+      <linearGradient id="gi1" x1="8" y1="4" x2="16" y2="12" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#00f5ff"/><stop offset="1" stopColor="#a855f7"/>
+      </linearGradient>
+      <linearGradient id="gi2" x1="4" y1="13" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#00f5ff"/><stop offset="1" stopColor="#a855f7"/>
+      </linearGradient>
+    </defs>
   </svg>
 );
 
@@ -130,6 +144,11 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate();
+  const setUser = useSetRecoilState(userAtom);
+
+  const [guestLoading, setGuestLoading] = useState(false);
+
   const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3000';
 
   const handleLogin = (e: React.FormEvent) => {
@@ -140,6 +159,25 @@ function Login() {
 
   const handleSocialLogin = (provider: string) => {
     window.open(`${BACKEND_URL}/auth/${provider.toLowerCase()}`, '_self');
+  };
+
+  const handleGuestPlay = async () => {
+    setGuestLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/guest`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Guest login failed');
+      const userData = await res.json();
+      setUser(userData);
+      navigate('/play');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGuestLoading(false);
+    }
   };
 
   return (
@@ -259,14 +297,19 @@ function Login() {
           </button>
 
           <button
-            id="login-apple-btn"
+            id="login-guest-btn"
             type="button"
-            className="login-social-btn login-social-btn--apple"
-            onClick={() => handleSocialLogin('Apple')}
-            aria-label="Log in with Apple"
+            className="login-social-btn login-social-btn--guest"
+            onClick={handleGuestPlay}
+            disabled={guestLoading}
+            aria-label="Play as Guest"
           >
-            <AppleIcon />
-            <span>Apple</span>
+            {guestLoading ? (
+              <span className="login-spinner" style={{ width: 16, height: 16 }} />
+            ) : (
+              <GuestIcon />
+            )}
+            <span>{guestLoading ? 'Loading…' : 'Guest'}</span>
           </button>
 
           <button

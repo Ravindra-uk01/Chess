@@ -2,10 +2,12 @@ import {atom, selector} from 'recoil';
 
 // put it in .env
 export const BACKEND_URL = 'http://localhost:3000';
+
 export interface User {
     id: string;
+    name: string;
     token: string;
-    email: string;
+    isGuest?: boolean;
 }
 
 export const userAtom = atom<User | null>({
@@ -20,14 +22,14 @@ export const userAtom = atom<User | null>({
                         'Content-Type': 'application/json'
                     },
                     credentials: "include",
-                })
+                });
 
                 if (!response.ok) {
                     return null;
                 }
                 const userData = await response.json();
                 return userData;
-            }catch (error) {
+            } catch (error) {
                 console.error('Error fetching user data:', error);
                 return null;
             }

@@ -1,23 +1,28 @@
 import { WebSocketServer } from 'ws';
 import * as url from 'url';
-
+import { extractUserId } from './auth';
+import { GameManager } from './GameManager';
+import { User } from './SocketManager';
 
 const wss = new WebSocketServer({port: 8080});
+
+const gameManager = new GameManager();
 
 wss.on("connection", (ws, req)=> {
 
     console.log('reached here');
-     //@ts-ignore
-     const token: string = url.parse(req.url, true).query.token;
-     console.log('req.url', req.url);
-    console.log('token', token);
-    // const token: string = url.parse(req.url, true).query.token;
-    // const userId = extractUserId(token);
-    // gameManager.addUser(new User(ws, userId));
+    const token = (url.parse(req.url ?? '', true).query.token as string) ?? '';
+    const userId = extractUserId(token);
+    if (!userId) {
+        ws.close(1008, "Unauthorized");
+        return;
+    }
 
-    // ws.on('close', () => {
-    //     gameManager.removeUser(ws);
-    // });
+    gameManager.addUser(new User(ws, userId));
+
+    ws.on('close', ()=> {
+        gameManager.removeUser(ws);
+    })
 });
 
 console.log('done');
