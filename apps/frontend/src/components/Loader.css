@@ -1,0 +1,175 @@
+.loader-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: radial-gradient(circle at center, #0f172a 0%, #070913 100%);
+  color: #f8fafc;
+  font-family: inherit;
+  z-index: 9999;
+  position: relative;
+  overflow: hidden;
+}
+
+.loader-root--fullscreen {
+  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+}
+
+/* Ambient glow in background */
+.loader-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 245, 255, 0.12) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  animation: loaderPulse 3s ease-in-out infinite alternate;
+}
+
+/* Spinner / Ring container */
+.loader-icon-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+/* Outer orbital ring */
+.loader-ring-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(0, 245, 255, 0.35);
+  animation: loaderSpin 12s linear infinite;
+}
+
+/* Inner orbital ring */
+.loader-ring-inner {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #00f5ff;
+  border-right-color: #a855f7;
+  animation: loaderSpinReverse 2.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+/* Center Chess piece */
+.loader-piece {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: loaderFloat 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(0, 245, 255, 0.45));
+}
+
+/* Brand text */
+.loader-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.loader-title-nexus {
+  color: #00f5ff;
+  text-shadow: 0 0 12px rgba(0, 245, 255, 0.5);
+}
+
+.loader-title-chess {
+  color: #ffffff;
+  letter-spacing: 0.25em;
+}
+
+/* Subtitle / message with animated dots */
+.loader-message {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.loader-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 2px;
+}
+
+.loader-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #00f5ff;
+  animation: loaderDotPulse 1.4s ease-in-out infinite;
+}
+
+.loader-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loader-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Animations */
+@keyframes loaderSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loaderSpinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes loaderFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.05);
+  }
+}
+
+@keyframes loaderPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes loaderDotPulse {
+  0%, 80%, 100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}

@@ -8,6 +8,7 @@ export interface User {
     name: string;
     token: string;
     isGuest?: boolean;
+    username?: string;
 }
 
 export const userAtom = atom<User | null>({

@@ -1,4 +1,9 @@
 import { useState, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
+import { userAtom } from '@repo/store/userAtom';
+import { useToast } from '../components/Toast';
+import { validateEmail, validateUsername, validatePassword } from '../utils/validation';
 import './Register.css';
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -43,9 +48,20 @@ const FacebookIcon = () => (
   </svg>
 );
 
-const AppleIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="white"/>
+const GuestIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="8" r="4" stroke="url(#rgi1)" strokeWidth="1.8"/>
+    <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="url(#rgi2)" strokeWidth="1.8" strokeLinecap="round"/>
+    <circle cx="19" cy="5" r="2" fill="rgba(0,245,255,0.25)" stroke="#00f5ff" strokeWidth="1.2"/>
+    <path d="M18.5 5h1M19 4.5v1" stroke="#00f5ff" strokeWidth="1" strokeLinecap="round"/>
+    <defs>
+      <linearGradient id="rgi1" x1="8" y1="4" x2="16" y2="12" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#00f5ff"/><stop offset="1" stopColor="#a855f7"/>
+      </linearGradient>
+      <linearGradient id="rgi2" x1="4" y1="13" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#00f5ff"/><stop offset="1" stopColor="#a855f7"/>
+      </linearGradient>
+    </defs>
   </svg>
 );
 
@@ -164,6 +180,26 @@ function Register() {
   const [showConfirm,     setShowConfirm]     = useState(false);
   const [agreedToTerms,   setAgreedToTerms]   = useState(false);
   const [isLoading,       setIsLoading]       = useState(false);
+  const [guestLoading,    setGuestLoading]    = useState(false);
+
+  const [fieldErrors, setFieldErrors] = useState<{
+    username?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    terms?: string;
+  }>({});
+  const [touched, setTouched] = useState<{
+    username?: boolean;
+    email?: boolean;
+    password?: boolean;
+    confirmPassword?: boolean;
+    terms?: boolean;
+  }>({});
+
+  const navigate = useNavigate();
+  const setUser = useSetRecoilState(userAtom);
+  const toast = useToast();
 
   const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3000';
 
@@ -171,19 +207,124 @@ function Register() {
   const passwordsMatch   = confirmPassword.length > 0 && password === confirmPassword;
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
+  const handleBlur = (field: 'username' | 'email' | 'password' | 'confirmPassword') => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    if (field === 'username') {
+      setFieldErrors((prev) => ({ ...prev, username: validateUsername(username) ?? undefined }));
+    } else if (field === 'email') {
+      setFieldErrors((prev) => ({ ...prev, email: validateEmail(email) ?? undefined }));
+    } else if (field === 'password') {
+      setFieldErrors((prev) => ({ ...prev, password: validatePassword(password) ?? undefined }));
+    } else if (field === 'confirmPassword') {
+      let err: string | undefined = undefined;
+      if (!confirmPassword) err = 'Please confirm your password';
+      else if (confirmPassword !== password) err = 'Passwords do not match';
+      setFieldErrors((prev) => ({ ...prev, confirmPassword: err }));
+    }
+  };
+
   const handleRegister = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
-      if (passwordsMismatch || !agreedToTerms) return;
+      const cleanUsername = username.trim();
+      const cleanEmail = email.trim();
+
+      const usernameErr = validateUsername(cleanUsername) ?? undefined;
+      const emailErr = validateEmail(cleanEmail) ?? undefined;
+      const passwordErr = validatePassword(password) ?? undefined;
+      let confirmErr: string | undefined = undefined;
+      if (!confirmPassword) {
+        confirmErr = 'Please confirm your password';
+      } else if (confirmPassword !== password) {
+        confirmErr = 'Passwords do not match';
+      }
+      const termsErr = !agreedToTerms ? 'Please agree to the Terms of Service to continue' : undefined;
+
+      setTouched({
+        username: true,
+        email: true,
+        password: true,
+        confirmPassword: true,
+        terms: true,
+      });
+
+      setFieldErrors({
+        username: usernameErr,
+        email: emailErr,
+        password: passwordErr,
+        confirmPassword: confirmErr,
+        terms: termsErr,
+      });
+
+      const firstError = usernameErr || emailErr || passwordErr || confirmErr || termsErr;
+      if (firstError) {
+        toast.error(firstError);
+        return;
+      }
+
       setIsLoading(true);
-      // API binding will be added later
-      setTimeout(() => setIsLoading(false), 1500);
+      try {
+        const res = await fetch(`${BACKEND_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: cleanUsername,
+            email: cleanEmail,
+            password,
+            name: cleanUsername,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+          const errMsg = data.message || 'Registration failed. Please try again.';
+          if (errMsg.toLowerCase().includes('email')) {
+            setFieldErrors((prev) => ({ ...prev, email: errMsg }));
+          } else if (errMsg.toLowerCase().includes('username')) {
+            setFieldErrors((prev) => ({ ...prev, username: errMsg }));
+          }
+          throw new Error(errMsg);
+        }
+
+        setUser(data);
+        toast.success(`Welcome to Nexus Chess, ${data.name || cleanUsername}!`);
+        navigate('/play', { replace: true });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
     },
-    [passwordsMismatch, agreedToTerms],
+    [username, email, password, confirmPassword, agreedToTerms, BACKEND_URL, setUser, navigate, toast],
   );
 
   const handleSocialSignup = (provider: string) => {
     window.open(`${BACKEND_URL}/auth/${provider.toLowerCase()}`, '_self');
+  };
+
+  const handleGuestPlay = async () => {
+    setGuestLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/guest`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Guest login failed');
+      }
+      setUser(data);
+      toast.success('Joined as Guest!');
+      navigate('/play');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Guest login failed. Please try again.';
+      toast.error(message);
+    } finally {
+      setGuestLoading(false);
+    }
   };
 
   return (
@@ -222,7 +363,7 @@ function Register() {
         <form className="reg-form" onSubmit={handleRegister} noValidate>
 
           {/* Username */}
-          <div className="reg-field-wrap">
+          <div className={`reg-field-wrap${touched.username && fieldErrors.username ? ' reg-field-wrap--error' : ''}`}>
             <span className="reg-field-icon"><UserIcon /></span>
             <input
               id="reg-username"
@@ -230,14 +371,23 @@ function Register() {
               type="text"
               placeholder="Choose a username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                if (touched.username) {
+                  setFieldErrors((prev) => ({ ...prev, username: validateUsername(e.target.value) ?? undefined }));
+                }
+              }}
+              onBlur={() => handleBlur('username')}
               autoComplete="username"
               required
             />
           </div>
+          {touched.username && fieldErrors.username && (
+            <p className="reg-field-error" role="alert">{fieldErrors.username}</p>
+          )}
 
           {/* Email */}
-          <div className="reg-field-wrap">
+          <div className={`reg-field-wrap${touched.email && fieldErrors.email ? ' reg-field-wrap--error' : ''}`}>
             <span className="reg-field-icon"><AtIcon /></span>
             <input
               id="reg-email"
@@ -245,14 +395,23 @@ function Register() {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (touched.email) {
+                  setFieldErrors((prev) => ({ ...prev, email: validateEmail(e.target.value) ?? undefined }));
+                }
+              }}
+              onBlur={() => handleBlur('email')}
               autoComplete="email"
               required
             />
           </div>
+          {touched.email && fieldErrors.email && (
+            <p className="reg-field-error" role="alert">{fieldErrors.email}</p>
+          )}
 
           {/* Password */}
-          <div className="reg-field-wrap">
+          <div className={`reg-field-wrap${touched.password && fieldErrors.password ? ' reg-field-wrap--error' : ''}`}>
             <span className="reg-field-icon"><LockIcon /></span>
             <input
               id="reg-password"
@@ -260,7 +419,13 @@ function Register() {
               type={showPassword ? 'text' : 'password'}
               placeholder="Create a password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (touched.password) {
+                  setFieldErrors((prev) => ({ ...prev, password: validatePassword(e.target.value) ?? undefined }));
+                }
+              }}
+              onBlur={() => handleBlur('password')}
               autoComplete="new-password"
               required
             />
@@ -274,6 +439,9 @@ function Register() {
               <EyeIcon open={showPassword} />
             </button>
           </div>
+          {touched.password && fieldErrors.password && (
+            <p className="reg-field-error" role="alert">{fieldErrors.password}</p>
+          )}
 
           {/* Password strength bar */}
           {password.length > 0 && (
@@ -299,7 +467,11 @@ function Register() {
           {/* Confirm Password */}
           <div
             className={`reg-field-wrap${
-              passwordsMismatch ? ' reg-field-wrap--error' : passwordsMatch ? ' reg-field-wrap--ok' : ''
+              (touched.confirmPassword && fieldErrors.confirmPassword) || passwordsMismatch
+                ? ' reg-field-wrap--error'
+                : passwordsMatch
+                  ? ' reg-field-wrap--ok'
+                  : ''
             }`}
           >
             <span className="reg-field-icon"><ShieldCheckIcon /></span>
@@ -309,7 +481,16 @@ function Register() {
               type={showConfirm ? 'text' : 'password'}
               placeholder="Confirm your password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (touched.confirmPassword) {
+                  let err: string | undefined = undefined;
+                  if (!e.target.value) err = 'Please confirm your password';
+                  else if (e.target.value !== password) err = 'Passwords do not match';
+                  setFieldErrors((prev) => ({ ...prev, confirmPassword: err }));
+                }
+              }}
+              onBlur={() => handleBlur('confirmPassword')}
               autoComplete="new-password"
               required
             />
@@ -323,8 +504,8 @@ function Register() {
               <EyeIcon open={showConfirm} />
             </button>
           </div>
-          {passwordsMismatch && (
-            <p className="reg-field-error" role="alert">Passwords do not match.</p>
+          {((touched.confirmPassword && fieldErrors.confirmPassword) || passwordsMismatch) && (
+            <p className="reg-field-error" role="alert">{fieldErrors.confirmPassword || 'Passwords do not match.'}</p>
           )}
 
           {/* Terms */}
@@ -333,23 +514,34 @@ function Register() {
               id="reg-terms-cb"
               type="checkbox"
               checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              onChange={(e) => {
+                setAgreedToTerms(e.target.checked);
+                if (touched.terms) {
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    terms: !e.target.checked ? 'Please agree to the Terms of Service to continue' : undefined,
+                  }));
+                }
+              }}
             />
             <span className="reg-custom-cb" aria-hidden="true" />
             <span>
               I agree to the&nbsp;
-              <a href="/terms"   id="reg-terms-link"   className="reg-link">Terms of Service</a>
+              <Link to="/terms"   id="reg-terms-link"   className="reg-link">Terms of Service</Link>
               &nbsp;&amp;&nbsp;
-              <a href="/privacy" id="reg-privacy-link" className="reg-link">Privacy Policy</a>
+              <Link to="/privacy" id="reg-privacy-link" className="reg-link">Privacy Policy</Link>
             </span>
           </label>
+          {touched.terms && fieldErrors.terms && (
+            <p className="reg-field-error" role="alert">{fieldErrors.terms}</p>
+          )}
 
           {/* Submit */}
           <button
             id="reg-submit-btn"
             type="submit"
             className={`reg-btn-primary${isLoading ? ' reg-btn-loading' : ''}`}
-            disabled={isLoading || !agreedToTerms || passwordsMismatch}
+            disabled={isLoading}
           >
             {isLoading ? (
               <span className="reg-spinner" aria-label="Creating account…" />
@@ -381,14 +573,19 @@ function Register() {
           </button>
 
           <button
-            id="reg-apple-btn"
+            id="reg-guest-btn"
             type="button"
-            className="reg-social-btn reg-social-btn--apple"
-            onClick={() => handleSocialSignup('Apple')}
-            aria-label="Sign up with Apple"
+            className="reg-social-btn reg-social-btn--guest"
+            onClick={handleGuestPlay}
+            disabled={guestLoading}
+            aria-label="Play as Guest"
           >
-            <AppleIcon />
-            <span>Apple</span>
+            {guestLoading ? (
+              <span className="reg-spinner" style={{ width: 16, height: 16 }} />
+            ) : (
+              <GuestIcon />
+            )}
+            <span>{guestLoading ? 'Loading…' : 'Guest'}</span>
           </button>
 
           <button
@@ -405,9 +602,9 @@ function Register() {
 
         <p className="reg-login">
           Already have an account?&nbsp;
-          <a href="/login" id="reg-login-link" className="reg-login-link">
+          <Link to="/login" id="reg-login-link" className="reg-login-link">
             Sign in →
-          </a>
+          </Link>
         </p>
       </main>
     </div>

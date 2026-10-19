@@ -6,6 +6,7 @@ import cors from "cors";
 import { initPassport } from "./passport";
 import authRouter from "./router/auth";
 import bodyParser from 'body-parser';
+import { initCronJobs } from "./jobs";
 
 const PORT = process.env.PORT;
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 initPassport(); // Initialize passport strategies
+initCronJobs(); // Initialize background cron tasks (guest cleanup)
 app.use(passport.initialize());
 app.use(passport.authenticate('session'));
 

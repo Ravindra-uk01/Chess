@@ -1,14 +1,37 @@
 import { Request, Response, Router } from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import rateLimit from "express-rate-limit";
 import { db } from "../db";
 import { v4 as uuidv4 } from 'uuid';
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../validations/auth";
+import { sendPasswordResetEmail } from "../services/email";
 
 const router = Router();
 const CLIENT_URL =
   process.env.AUTH_REDIRECT_URL ?? 'http://localhost:5173/game/random';
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 const COOKIE_MAX_AGE = Number(process.env.COOKIE_MAX_AGE ?? 24 * 60 * 60 * 1000);
+const COOKIE_MAX_AGE_REMEMBER = 30 * 24 * 60 * 60 * 1000; // 30 days
+const BCRYPT_SALT_ROUNDS = 10;
+
+// Rate limiter to prevent abusive guest creation: 5 guests per hour per IP
+const guestRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 requests per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Rate limit exceeded: You can only create 5 guest sessions per hour from this IP.',
+  },
+});
 
 interface UserDetails {
   id: string;
@@ -18,7 +41,7 @@ interface UserDetails {
 }
 
 // this route is to be hit when the user wants to login as a guest
-router.post('/guest', async (req: Request, res: Response) => {
+router.post('/guest', guestRateLimiter, async (req: Request, res: Response) => {
   const bodyData = req.body;
   let guestUUID = 'guest-' + uuidv4();
 
@@ -47,30 +70,43 @@ router.post('/guest', async (req: Request, res: Response) => {
 
 // Manual register by email
 router.post('/register', async (req: Request, res: Response) => {
-  const { username, email, password, name } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email and password are required' });
+  const parseResult = registerSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: parseResult.error.issues[0].message,
+      errors: parseResult.error.issues,
+    });
   }
+
+  const { username, email, password, name } = parseResult.data;
 
   const existingUser = await db.user.findFirst({
     where: {
       OR: [
         { email },
-        ...(username ? [{ username }] : []),
+        { username },
       ],
     },
   });
 
   if (existingUser) {
-    return res.status(400).json({ success: false, message: 'User already exists' });
+    const isEmailTaken = existingUser.email.toLowerCase() === email.toLowerCase();
+    const message = isEmailTaken
+      ? 'An account with this email already exists'
+      : 'This username is already taken. Please choose another one.';
+    return res.status(400).json({ success: false, message });
   }
+
+  // Hash password using bcrypt before persisting
+  const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
   const displayName = name || username || email.split('@')[0];
   const user = await db.user.create({
     data: {
-      username: username || email.split('@')[0],
+      username,
       email,
-      password,
+      password: hashedPassword,
       name: displayName,
       provider: 'EMAIL',
     },
@@ -90,23 +126,48 @@ router.post('/register', async (req: Request, res: Response) => {
   });
 });
 
-// Manual login by email
+// Manual login by email or username
 router.post('/login', async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email and password are required' });
+  const parseResult = loginSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: parseResult.error.issues[0].message,
+      errors: parseResult.error.issues,
+    });
   }
 
+  const { email: identifier, password } = parseResult.data;
   const user = await db.user.findFirst({
     where: {
       OR: [
-        { email },
-        { username: email },
+        { email: identifier.toLowerCase() },
+        { username: identifier },
       ],
     },
   });
 
-  if (!user || user.password !== password) {
+  if (!user || !user.password) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+
+  // Verify password with bcrypt; support opportunistic upgrade for any legacy plain-text passwords
+  let isPasswordValid = false;
+  if (user.password.startsWith('$2')) {
+    isPasswordValid = await bcrypt.compare(password, user.password);
+  } else {
+    isPasswordValid = user.password === password;
+    if (isPasswordValid) {
+      // Seamlessly upgrade legacy plain text password to bcrypt
+      const upgradedHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+      await db.user.update({
+        where: { id: user.id },
+        data: { password: upgradedHash },
+      });
+    }
+  }
+
+  if (!isPasswordValid) {
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
 
@@ -116,13 +177,113 @@ router.post('/login', async (req: Request, res: Response) => {
     JWT_SECRET,
   );
 
-  res.cookie('token', token, { maxAge: COOKIE_MAX_AGE, httpOnly: true, sameSite: 'lax' });
+  const rememberMe = Boolean(req.body.rememberMe);
+  const cookieMaxAge = rememberMe ? COOKIE_MAX_AGE_REMEMBER : COOKIE_MAX_AGE;
+
+  res.cookie('token', token, { maxAge: cookieMaxAge, httpOnly: true, sameSite: 'lax' });
   return res.json({
     id: user.id,
     name: displayName,
     token,
     isGuest: false,
   });
+});
+
+// Request password reset link by email
+router.post('/forgot-password', async (req: Request, res: Response) => {
+  const parseResult = forgotPasswordSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: parseResult.error.issues[0].message,
+    });
+  }
+
+  const { email } = parseResult.data;
+
+  // Find user by email
+  const user = await db.user.findFirst({
+    where: { email: email.toLowerCase() },
+  });
+
+  // If user exists and is an email account, generate reset token
+  if (user && user.provider === 'EMAIL') {
+    const resetToken = jwt.sign(
+      { userId: user.id, email: user.email, purpose: 'reset-password' },
+      JWT_SECRET,
+      { expiresIn: '15m' },
+    );
+
+    const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+    const resetUrl = `${clientOrigin}/reset-password?token=${encodeURIComponent(resetToken)}`;
+
+    await sendPasswordResetEmail({
+      to: user.email,
+      resetUrl,
+      userName: user.name || user.username || undefined,
+    });
+  }
+
+  // Consistent security response: do not leak whether email exists
+  return res.json({
+    success: true,
+    message: 'If an account exists with that email, a password reset link has been sent.',
+  });
+});
+
+// Reset password using verified token
+router.post('/reset-password', async (req: Request, res: Response) => {
+  const parseResult = resetPasswordSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: parseResult.error.issues[0].message,
+    });
+  }
+
+  const { token, password } = parseResult.data;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId?: string;
+      email?: string;
+      purpose?: string;
+    };
+
+    if (!decoded || decoded.purpose !== 'reset-password' || !decoded.userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired password reset token.',
+      });
+    }
+
+    const user = await db.user.findFirst({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'User account not found.',
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    await db.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Your password has been reset successfully. You can now log in.',
+    });
+  } catch {
+    return res.status(400).json({
+      success: false,
+      message: 'Password reset link has expired or is invalid. Please request a new one.',
+    });
+  }
 });
 
 router.get('/refresh', async (req: Request, res: Response) => {

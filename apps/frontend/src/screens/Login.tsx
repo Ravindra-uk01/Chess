@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { userAtom } from '@repo/store/userAtom';
+import { useToast } from '../components/Toast';
+import { validateLoginIdentifier } from '../utils/validation';
 import './Login.css';
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -138,23 +140,87 @@ function FloatingParticles() {
 // ── Main Login Component ───────────────────────────────────────────────────────
 
 function Login() {
-  const [email, setEmail] = useState('');
+  const [rememberMe, setRememberMe] = useState(() => Boolean(localStorage.getItem('nexus_remember_email')));
+  const [email, setEmail] = useState(() => localStorage.getItem('nexus_remember_email') || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
+  const [touched, setTouched] = useState<{
+    email?: boolean;
+    password?: boolean;
+  }>({});
+
   const navigate = useNavigate();
+  const location = useLocation();
   const setUser = useSetRecoilState(userAtom);
+  const toast = useToast();
 
   const [guestLoading, setGuestLoading] = useState(false);
 
   const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3000';
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleBlur = (field: 'email' | 'password') => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    if (field === 'email') {
+      setFieldErrors((prev) => ({ ...prev, email: validateLoginIdentifier(email) ?? undefined }));
+    } else if (field === 'password') {
+      setFieldErrors((prev) => ({ ...prev, password: !password ? 'Password is required' : undefined }));
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanEmail = email.trim();
+    const emailErr = validateLoginIdentifier(cleanEmail) ?? undefined;
+    const passwordErr = !password ? 'Password is required' : undefined;
+
+    setTouched({ email: true, password: true });
+    setFieldErrors({ email: emailErr, password: passwordErr });
+
+    const firstErr = emailErr || passwordErr;
+    if (firstErr) {
+      toast.error(firstErr);
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 1500);
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: cleanEmail, password, rememberMe }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        const errMsg = data.message || 'Login failed. Please check your credentials.';
+        setFieldErrors((prev) => ({ ...prev, email: errMsg, password: ' ' }));
+        throw new Error(errMsg);
+      }
+
+      // Persist or clear remembered email in localStorage
+      if (rememberMe) {
+        localStorage.setItem('nexus_remember_email', cleanEmail);
+      } else {
+        localStorage.removeItem('nexus_remember_email');
+      }
+
+      setUser(data);
+      toast.success(`Welcome back, ${data.name || 'Player'}!`);
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/play';
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -169,12 +235,16 @@ function Login() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error('Guest login failed');
-      const userData = await res.json();
-      setUser(userData);
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Guest login failed');
+      }
+      setUser(data);
+      toast.success('Joined as Guest!');
       navigate('/play');
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Guest login failed. Please try again.';
+      toast.error(message);
     } finally {
       setGuestLoading(false);
     }
@@ -209,22 +279,31 @@ function Login() {
 
         {/* Form */}
         <form className="login-form" onSubmit={handleLogin} noValidate>
-          <div className="login-field-wrap">
+          <div className={`login-field-wrap${touched.email && fieldErrors.email ? ' login-field-wrap--error' : ''}`}>
             <span className="login-field-icon"><UserIcon /></span>
             <input
               id="login-email"
               className="login-input"
-              type="email"
-              placeholder="Username, Phone or Email"
+              type="text"
+              placeholder="Username or Email address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (touched.email) {
+                  setFieldErrors((prev) => ({ ...prev, email: validateLoginIdentifier(e.target.value) ?? undefined }));
+                }
+              }}
+              onBlur={() => handleBlur('email')}
+              autoComplete="username"
               required
             />
             <div className="login-input-line" />
           </div>
+          {touched.email && fieldErrors.email && (
+            <p className="login-field-error" role="alert">{fieldErrors.email}</p>
+          )}
 
-          <div className="login-field-wrap">
+          <div className={`login-field-wrap${touched.password && fieldErrors.password ? ' login-field-wrap--error' : ''}`}>
             <span className="login-field-icon"><LockIcon /></span>
             <input
               id="login-password"
@@ -232,7 +311,13 @@ function Login() {
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (touched.password) {
+                  setFieldErrors((prev) => ({ ...prev, password: !e.target.value ? 'Password is required' : undefined }));
+                }
+              }}
+              onBlur={() => handleBlur('password')}
               autoComplete="current-password"
               required
             />
@@ -247,6 +332,9 @@ function Login() {
             </button>
             <div className="login-input-line" />
           </div>
+          {touched.password && fieldErrors.password && fieldErrors.password.trim() && (
+            <p className="login-field-error" role="alert">{fieldErrors.password}</p>
+          )}
 
           <div className="login-row">
             <label className="login-remember" htmlFor="login-remember-cb">
@@ -259,9 +347,9 @@ function Login() {
               <span className="login-custom-cb" aria-hidden="true" />
               Remember me
             </label>
-            <a href="/forgot-password" id="login-forgot-link" className="login-forgot">
+            <Link to="/forgot-password" id="login-forgot-link" className="login-forgot">
               Forgot Password?
-            </a>
+            </Link>
           </div>
 
           <button
@@ -326,9 +414,9 @@ function Login() {
 
         <p className="login-signup">
           New here?&nbsp;
-          <a href="/signup" id="login-signup-link" className="login-signup-link">
+          <Link to="/signup" id="login-signup-link" className="login-signup-link">
             Create an account →
-          </a>
+          </Link>
         </p>
       </main>
     </div>

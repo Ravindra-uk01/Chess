@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
+import { userAtom } from '@repo/store/userAtom';
+
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3000';
 
 // ── Icons (inline SVG) ────────────────────────────────────────────────────────
+
+const LogOutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
 
 const KingIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -19,6 +31,13 @@ const KingIcon = () => (
         <stop stopColor="#00f5ff" stopOpacity="0.2"/><stop offset="1" stopColor="#a855f7" stopOpacity="0.2"/>
       </linearGradient>
     </defs>
+  </svg>
+);
+
+const HomeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
   </svg>
 );
 
@@ -104,13 +123,14 @@ const FireIcon = () => (
 // ── Nav item definitions ──────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: 'play',       label: 'Play',        icon: <PlayIcon />,   path: '/play',        badge: null },
-  { id: 'puzzles',    label: 'Puzzles',     icon: <PuzzleIcon />, path: '/puzzles',     badge: '5' },
-  { id: 'learn',      label: 'Learn',       icon: <BookIcon />,   path: '/learn',       badge: null },
-  { id: 'bots',       label: 'Play Bots',   icon: <BotIcon />,    path: '/bots',        badge: null },
-  { id: 'tournament', label: 'Tournaments', icon: <TrophyIcon />, path: '/tournaments', badge: 'LIVE' },
-  { id: 'watch',      label: 'Watch',       icon: <WatchIcon />,  path: '/watch',       badge: null },
-  { id: 'community',  label: 'Community',   icon: <UsersIcon />,  path: '/community',   badge: null },
+  { id: 'home',       label: 'Home',        icon: <HomeIcon />,   path: '/home',        disabled: false },
+  { id: 'play',       label: 'Play',        icon: <PlayIcon />,   path: '/play',        disabled: false },
+  { id: 'puzzles',    label: 'Puzzles',     icon: <PuzzleIcon />, path: '/puzzles',     disabled: true, badge: 'Coming soon...' },
+  { id: 'learn',      label: 'Learn',       icon: <BookIcon />,   path: '/learn',       disabled: true, badge: 'Coming soon...' },
+  { id: 'bots',       label: 'Play Bots',   icon: <BotIcon />,    path: '/bots',        disabled: true, badge: 'Coming soon...' },
+  { id: 'tournament', label: 'Tournaments', icon: <TrophyIcon />, path: '/tournaments', disabled: true, badge: 'Coming soon...' },
+  { id: 'watch',      label: 'Watch',       icon: <WatchIcon />,  path: '/watch',       disabled: true, badge: 'Coming soon...' },
+  { id: 'community',  label: 'Community',   icon: <UsersIcon />,  path: '/community',   disabled: true, badge: 'Coming soon...' },
 ];
 
 // ── Sidebar Component ─────────────────────────────────────────────────────────
@@ -119,6 +139,21 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate  = useNavigate();
   const location  = useLocation();
+  const [user, setUser] = useRecoilState(userAtom);
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${BACKEND_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setUser(null);
+      navigate('/login');
+    }
+  };
 
   const w = collapsed ? '72px' : '220px';
 
@@ -184,13 +219,22 @@ export default function Sidebar() {
       {/* ── Nav items ─────────────────────────────────────── */}
       <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 8px' }}>
         {NAV_ITEMS.map((item) => {
-          const active = item.id !== 'home' && location.pathname === item.path;
+          const isHome = item.id === 'home';
+          const active = !item.disabled && (
+            isHome
+              ? (location.pathname === '/home' || location.pathname === '/')
+              : (location.pathname === item.path || (item.path === '/play' && (location.pathname.startsWith('/play') || location.pathname.startsWith('/game/'))))
+          );
+
           return (
             <button
               key={item.id}
               id={`sidebar-${item.id}`}
-              onClick={() => navigate(item.path)}
-              title={collapsed ? item.label : undefined}
+              disabled={item.disabled}
+              onClick={() => {
+                if (!item.disabled) navigate(item.path);
+              }}
+              title={collapsed ? `${item.label}${item.disabled ? ' (Coming soon...)' : ''}` : undefined}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -200,9 +244,10 @@ export default function Sidebar() {
                 justifyContent: collapsed ? 'center' : 'flex-start',
                 borderRadius: 10,
                 border: 'none',
-                cursor: 'pointer',
+                cursor: item.disabled ? 'not-allowed' : 'pointer',
                 marginBottom: 2,
                 transition: 'background 0.2s, color 0.2s',
+                opacity: item.disabled ? 0.45 : 1,
                 background: active
                   ? 'linear-gradient(135deg,rgba(0,245,255,0.12),rgba(168,85,247,0.10))'
                   : 'transparent',
@@ -210,12 +255,16 @@ export default function Sidebar() {
                 position: 'relative',
               }}
               onMouseEnter={(e) => {
-                if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
-                (e.currentTarget as HTMLElement).style.color = active ? '#00f5ff' : '#e2e8f0';
+                if (!item.disabled && !active) {
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
+                  (e.currentTarget as HTMLElement).style.color = '#e2e8f0';
+                }
               }}
               onMouseLeave={(e) => {
-                if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent';
-                (e.currentTarget as HTMLElement).style.color = active ? '#00f5ff' : 'rgba(148,163,184,0.75)';
+                if (!item.disabled && !active) {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = 'rgba(148,163,184,0.75)';
+                }
               }}
             >
               {/* Active bar */}
@@ -234,13 +283,16 @@ export default function Sidebar() {
               )}
               {!collapsed && item.badge && (
                 <span style={{
-                  fontSize: 10, fontWeight: 700, fontFamily: 'Orbitron,sans-serif',
-                  padding: '2px 6px', borderRadius: 99,
-                  background: item.badge === 'LIVE'
-                    ? 'linear-gradient(135deg,#ef4444,#f97316)'
-                    : 'rgba(168,85,247,0.25)',
-                  color: item.badge === 'LIVE' ? '#fff' : '#a855f7',
-                  letterSpacing: item.badge === 'LIVE' ? 1 : 0,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  fontFamily: 'Inter,sans-serif',
+                  padding: '2px 6px',
+                  borderRadius: 6,
+                  background: 'rgba(255,255,255,0.06)',
+                  color: 'rgba(148,163,184,0.6)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  letterSpacing: 0.2,
+                  whiteSpace: 'nowrap',
                 }}>
                   {item.badge}
                 </span>
@@ -252,61 +304,110 @@ export default function Sidebar() {
         {/* Separator */}
         <div style={{ height: 1, background: 'rgba(0,245,255,0.06)', margin: '12px 4px' }} />
 
-        {/* Settings */}
+        {/* Settings (Disabled) */}
         <button
           id="sidebar-settings"
-          onClick={() => navigate('/settings')}
-          title={collapsed ? 'Settings' : undefined}
+          disabled
+          title={collapsed ? 'Settings (Coming soon...)' : undefined}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
             padding: collapsed ? '11px 0' : '11px 12px',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            borderRadius: 10, border: 'none', cursor: 'pointer',
-            background: 'transparent', color: 'rgba(148,163,184,0.6)',
+            borderRadius: 10, border: 'none', cursor: 'not-allowed',
+            background: 'transparent', color: 'rgba(148,163,184,0.4)',
+            opacity: 0.45,
             transition: 'background 0.2s, color 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
-            (e.currentTarget as HTMLElement).style.color = '#e2e8f0';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'transparent';
-            (e.currentTarget as HTMLElement).style.color = 'rgba(148,163,184,0.6)';
           }}
         >
           <SettingsIcon />
-          {!collapsed && <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>Settings</span>}
+          {!collapsed && (
+            <>
+              <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', flex: 1, textAlign: 'left' }}>Settings</span>
+              <span style={{
+                fontSize: 9, fontWeight: 500, fontFamily: 'Inter,sans-serif',
+                padding: '2px 6px', borderRadius: 6,
+                background: 'rgba(255,255,255,0.06)', color: 'rgba(148,163,184,0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                letterSpacing: 0.2,
+                whiteSpace: 'nowrap',
+              }}>Coming soon...</span>
+            </>
+          )}
         </button>
       </nav>
 
-      {/* ── User card ─────────────────────────────────────── */}
-      {!collapsed && (
-        <div style={{
-          margin: '8px', borderRadius: 12,
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(0,245,255,0.08)',
-          padding: '12px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(135deg,#00c8d4,#7c3aed)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 14, fontWeight: 700, fontFamily: 'Orbitron,sans-serif', color: '#fff',
-            }}>R</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Ravindrauk01
-              </div>
-              <div style={{ fontSize: 11, color: 'rgba(0,245,255,0.6)', fontFamily: 'Orbitron,sans-serif', letterSpacing: 1 }}>ELO 1247</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <FireIcon />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#f97316' }}>4</span>
-            </div>
+      {/* ── User card & Logout ─────────────────────────────── */}
+      <div style={{
+        margin: '8px',
+        borderRadius: 12,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(0,245,255,0.08)',
+        padding: collapsed ? '8px 4px' : '10px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+            background: user?.isGuest
+              ? 'linear-gradient(135deg, rgba(0,245,255,0.35), rgba(168,85,247,0.35))'
+              : 'linear-gradient(135deg,#00c8d4,#7c3aed)',
+            border: '1px solid rgba(0,245,255,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 14, fontWeight: 700, fontFamily: 'Orbitron,sans-serif', color: '#fff',
+          }}>
+            {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
           </div>
+          {!collapsed && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                title={user?.name || 'User'}
+                style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+              >
+                {user?.name || 'User'}
+              </div>
+              <div style={{ fontSize: 10, color: user?.isGuest ? '#f59e0b' : 'rgba(0,245,255,0.6)', fontFamily: 'Orbitron,sans-serif', letterSpacing: 0.5 }}>
+                {user?.isGuest ? 'GUEST' : 'MEMBER'}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Logout button */}
+        <button
+          id="sidebar-logout-btn"
+          onClick={handleLogout}
+          title={collapsed ? 'Log out' : undefined}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: 8,
+            padding: collapsed ? '8px 0' : '7px 8px',
+            borderRadius: 8,
+            border: 'none',
+            background: 'rgba(239, 68, 68, 0.08)',
+            color: '#f87171',
+            cursor: 'pointer',
+            fontSize: 12,
+            fontWeight: 500,
+            transition: 'background 0.2s, color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = 'rgba(239, 68, 68, 0.2)';
+            (e.currentTarget as HTMLElement).style.color = '#ef4444';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = 'rgba(239, 68, 68, 0.08)';
+            (e.currentTarget as HTMLElement).style.color = '#f87171';
+          }}
+        >
+          <LogOutIcon />
+          {!collapsed && <span>Log out</span>}
+        </button>
+      </div>
 
       {/* ── Collapse toggle ───────────────────────────────── */}
       <button

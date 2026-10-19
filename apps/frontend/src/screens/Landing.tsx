@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { userAtom, BACKEND_URL } from '@repo/store/userAtom';
 
 const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
@@ -73,6 +73,7 @@ function StatPill({ value, label }: { value: string; label: string }) {
 // ── Main Landing ─────────────────────────────────────────────────────────────
 function Landing() {
   const navigate = useNavigate();
+  const user = useRecoilValue(userAtom);
   const setUser = useSetRecoilState(userAtom);
 
   const handleGuestPlay = async () => {
@@ -150,26 +151,54 @@ function Landing() {
           className="mt-10 flex flex-wrap gap-4 justify-center animate-fade-in-up"
           style={{ animationDelay: '0.3s' }}
         >
-          <button
-            id="landing-login-btn"
-            className="btn-glow px-8 py-3.5 rounded-xl text-sm"
-            onClick={() => navigate('/login')}
-          >
-            Login to Play
-          </button>
-          <button
-            id="landing-guest-btn"
-            className="px-8 py-3.5 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
-            style={{
-              borderColor: 'rgba(0,245,255,0.35)',
-              color: '#00f5ff',
-              background: 'rgba(0,245,255,0.06)',
-            }}
-            onClick={handleGuestPlay}
-          >
-            <span style={{ fontSize: '16px' }}>👤</span>
-            Play as Guest
-          </button>
+          {user ? (
+            <>
+              <button
+                id="landing-home-btn"
+                className="btn-glow px-8 py-3.5 rounded-xl text-sm font-semibold flex items-center gap-2"
+                onClick={() => navigate('/home')}
+              >
+                <span>Go to Home</span>
+                <span>→</span>
+              </button>
+              <button
+                id="landing-play-btn"
+                className="px-8 py-3.5 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
+                style={{
+                  borderColor: 'rgba(0,245,255,0.35)',
+                  color: '#00f5ff',
+                  background: 'rgba(0,245,255,0.06)',
+                }}
+                onClick={() => navigate('/play')}
+              >
+                <span>⚔️</span>
+                <span>Play Now</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                id="landing-login-btn"
+                className="btn-glow px-8 py-3.5 rounded-xl text-sm"
+                onClick={() => navigate('/login')}
+              >
+                Login to Play
+              </button>
+              <button
+                id="landing-guest-btn"
+                className="px-8 py-3.5 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
+                style={{
+                  borderColor: 'rgba(0,245,255,0.35)',
+                  color: '#00f5ff',
+                  background: 'rgba(0,245,255,0.06)',
+                }}
+                onClick={handleGuestPlay}
+              >
+                <span style={{ fontSize: '16px' }}>👤</span>
+                Play as Guest
+              </button>
+            </>
+          )}
           <button
             id="landing-learn-btn"
             className="px-8 py-3.5 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5"
@@ -269,25 +298,37 @@ function Landing() {
             Join millions of players worldwide. Create your free account or jump right in as a guest.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <button
-              id="landing-signup-btn"
-              className="btn-glow px-10 py-4 rounded-xl text-sm"
-              onClick={() => navigate('/signup')}
-            >
-              Create Free Account
-            </button>
-            <button
-              id="landing-guest-cta-btn"
-              className="px-10 py-4 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5"
-              style={{
-                borderColor: 'rgba(0,245,255,0.35)',
-                color: '#00f5ff',
-                background: 'rgba(0,245,255,0.06)',
-              }}
-              onClick={handleGuestPlay}
-            >
-              👤 Play as Guest
-            </button>
+            {user ? (
+              <button
+                id="landing-home-cta-btn"
+                className="btn-glow px-10 py-4 rounded-xl text-sm font-semibold"
+                onClick={() => navigate('/home')}
+              >
+                Go to Dashboard →
+              </button>
+            ) : (
+              <>
+                <button
+                  id="landing-signup-btn"
+                  className="btn-glow px-10 py-4 rounded-xl text-sm"
+                  onClick={() => navigate('/signup')}
+                >
+                  Create Free Account
+                </button>
+                <button
+                  id="landing-guest-cta-btn"
+                  className="px-10 py-4 rounded-xl text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5"
+                  style={{
+                    borderColor: 'rgba(0,245,255,0.35)',
+                    color: '#00f5ff',
+                    background: 'rgba(0,245,255,0.06)',
+                  }}
+                  onClick={handleGuestPlay}
+                >
+                  👤 Play as Guest
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
