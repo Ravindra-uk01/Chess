@@ -186,6 +186,7 @@ router.post('/login', async (req: Request, res: Response) => {
     name: displayName,
     token,
     isGuest: false,
+    rating: user.rating
   });
 });
 
@@ -214,7 +215,7 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
       { expiresIn: '15m' },
     );
 
-    const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+    const clientOrigin = (process.env.CLIENT_ORIGIN || 'http://localhost:5173').replace(/\/+$/, '');
     const resetUrl = `${clientOrigin}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
     await sendPasswordResetEmail({

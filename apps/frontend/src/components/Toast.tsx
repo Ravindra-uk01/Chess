@@ -9,11 +9,20 @@ export interface ToastItem {
   message: string;
 }
 
+export interface ToastOptions {
+  title?: string;
+  description?: string;
+  message?: string;
+  variant?: 'default' | 'destructive' | 'success' | 'error' | string;
+  duration?: number;
+}
+
 interface ToastContextValue {
   showToast: (message: string, type?: ToastType, durationMs?: number) => void;
   error: (message: string, durationMs?: number) => void;
   success: (message: string, durationMs?: number) => void;
   info: (message: string, durationMs?: number) => void;
+  toast: (opts: ToastOptions | string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -89,9 +98,30 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast(message, 'info', durationMs);
   }, [showToast]);
 
+  const toast = useCallback(
+    (opts: ToastOptions | string) => {
+      if (typeof opts === 'string') {
+        showToast(opts, 'info');
+        return;
+      }
+      const message =
+        [opts.title, opts.description, opts.message].filter(Boolean).join(' - ') ||
+        opts.title ||
+        'Notification';
+      const type: ToastType =
+        opts.variant === 'destructive' || opts.variant === 'error'
+          ? 'error'
+          : opts.variant === 'default' || opts.variant === 'success'
+          ? 'success'
+          : 'info';
+      showToast(message, type, opts.duration);
+    },
+    [showToast]
+  );
+
   const value = useMemo(
-    () => ({ showToast, error, success, info }),
-    [showToast, error, success, info],
+    () => ({ showToast, error, success, info, toast }),
+    [showToast, error, success, info, toast],
   );
 
   return (

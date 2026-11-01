@@ -65,6 +65,10 @@ export async function sendPasswordResetEmail({
           user: smtpUser,
           pass: smtpPass,
         },
+        tls: {
+          // Bypasses local antivirus/firewall mail shield certificate injection (e.g., Norton)
+          rejectUnauthorized: false,
+        },
       });
 
       await transporter.sendMail({
@@ -74,7 +78,7 @@ export async function sendPasswordResetEmail({
         html: htmlContent,
       });
 
-      console.log(`[Email] Password reset link sent to ${to}`);
+      console.log(`[Email] Password reset link successfully sent to ${to}`);
       return true;
     } catch (err) {
       console.error('[Email] Failed to send email via SMTP transporter:', err);

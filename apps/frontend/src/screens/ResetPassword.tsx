@@ -130,7 +130,7 @@ export default function ResetPassword() {
 
         <form className="auth-reset-form" onSubmit={handleSubmit} noValidate>
           <div>
-            <div className={`auth-reset-field-wrap${touched.password && passwordError ? ' auth-reset-field-wrap--error' : ''}`}>
+            <div className={`auth-reset-field-wrap${touched.password && passwordError ? ' auth-reset-field-wrap--error mb-4' : ''}`}>
               <span className="auth-reset-field-icon"><LockIcon /></span>
               <input
                 id="reset-password"
@@ -166,7 +166,7 @@ export default function ResetPassword() {
           </div>
 
           <div>
-            <div className={`auth-reset-field-wrap${touched.confirm && confirmError ? ' auth-reset-field-wrap--error' : ''}`}>
+            <div className={`auth-reset-field-wrap${touched.confirm && confirmError ? ' auth-reset-field-wrap--error mb-4' : ''}`}>
               <span className="auth-reset-field-icon"><LockIcon /></span>
               <input
                 id="reset-confirm-password"

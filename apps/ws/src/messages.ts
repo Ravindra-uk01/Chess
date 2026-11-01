@@ -8,3 +8,5 @@ export const GAME_NOTIFY = "game_notify"
 export const GAME_ALERT = "game_alert"
 export const GAME_ENDED = "game_ended";
 export const GAME_JOINED = "game_joined";
+export const GAME_ADDED = "game_added";
+export const EXIT_GAME = "exit_game";

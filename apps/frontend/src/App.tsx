@@ -17,6 +17,7 @@ import { Loader } from './components/Loader'
 import { ProtectedRouteWithSuspense } from './components/ProtectedRoute'
 
 import { ToastProvider } from './components/Toast'
+import { SocketProvider } from './context/SocketContext'
 
 function App() {
   return (
@@ -34,8 +35,9 @@ function App() {
 
 function AuthApp() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <SocketProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Public routes — accessible by everyone */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -82,6 +84,7 @@ function AuthApp() {
         />
       </Routes>
     </BrowserRouter>
+    </SocketProvider>
   )
 }
 

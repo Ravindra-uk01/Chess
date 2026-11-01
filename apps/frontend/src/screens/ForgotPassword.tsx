@@ -105,7 +105,7 @@ export default function ForgotPassword() {
 
             <form className="auth-reset-form" onSubmit={handleSubmit} noValidate>
               <div>
-                <div className={`auth-reset-field-wrap${touched && error ? ' auth-reset-field-wrap--error' : ''}`}>
+                <div className={`auth-reset-field-wrap${touched && error ? ' auth-reset-field-wrap--error mb-4' : ''}`}>
                   <span className="auth-reset-field-icon"><MailIcon /></span>
                   <input
                     id="forgot-email"

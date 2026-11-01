@@ -114,12 +114,6 @@ const ChevronIcon = ({ collapsed }: { collapsed: boolean }) => (
   </svg>
 );
 
-const FireIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="#f97316">
-    <path d="M12.9 2.1C13 2 13 2 13 2s0 1.4-.9 2.7C11.2 6.2 10 7 10 7s.3-2.1-1.6-4C6.7 1.3 5 1 5 1s1.3 2.3.5 4.5C4.7 8 3 9 3 12c0 5 4 9 9 9s9-4 9-9c0-4.1-4-6.8-4-6.8s.5 1.8-.8 3.4C15.2 9.8 14 10 14 10s.9-1.7-.1-3.3c-.7-1-1-4.6-1-4.6z"/>
-  </svg>
-);
-
 // ── Nav item definitions ──────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
